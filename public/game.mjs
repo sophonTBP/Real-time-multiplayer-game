@@ -21,7 +21,7 @@ function generateMob() {
   let randomY = Math.floor((Math.random() * 250) + 150)
   let id = Date.now()
   //{x, y, value, id}
-  return new Collectible(randomX, randomY, randomValue, id)
+  return new Collectible({x:randomX, y:randomY, value:randomValue,id: id})
 
 
 
@@ -54,24 +54,30 @@ function drawPlayer(ctx, currPlayerPosition) {
     ctx.shadowColor = 'red';
     ctx.shadowBlur = 15;
     ctx.drawImage(img, currPlayerPosition.x, currPlayerPosition.y, 80, 80)
-    
+
   }, false);
   img.src = `./assets/avatars/a${value.toString()}.png`
 
 }
-let playerId = Date.now()
-let player = new Player(10, 10, 0, playerId, 0)
+let avatarId = Date.now()
+let avatar = new Player({x:10, y:10, width:80, height: 80,score: 0, id:avatarId})
 
 let mob = generateMob()
 
 
 function play() {
   keyBoard.listener()
-  let playerMovement = { speed: player.speed, dir:player.dir }
-  keyBoard.keyboardInput(canvas, playerMovement, player)
-  player.movePlayer(playerMovement.dir, playerMovement.speed)
-  drawPlayer(ctx, player)
+  let avatarMovement = { speed: avatar.speed, dir: avatar.dir }
+
+  keyBoard.keyboardInput(canvas, avatarMovement, avatar)
+  avatar.movePlayer(avatarMovement.dir, avatarMovement.speed )
+  drawPlayer(ctx, avatar)
+  if (avatar.collision(mob) == true) {
+    console.log(avatar.score)
+    mob = generateMob()
+  }
   drawMob(mob)
+  
   requestAnimationFrame(play);
 }
 

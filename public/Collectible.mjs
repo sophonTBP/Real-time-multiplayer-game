@@ -1,11 +1,9 @@
 class Collectible {
-  constructor(x, y, value, id) {
-this.x=x;
-this.y=y;
+  constructor({x, y, value, id}) {
+    Object.assign(this, {x, y, value, id}) 
 this.width=50;
 this.height=50;
-this.value=value;
-this.id=id;
+
   }
 
   

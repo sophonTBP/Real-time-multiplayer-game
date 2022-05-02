@@ -46,10 +46,12 @@ export class KeyBoard {
 
 
 
+    // manages keyBoard inputs and collisions with the game borders
+
 
     keyboardInput(canvas, playerMovement, gridPosition) {
         let width = 80;
-        let height =80;
+        let height = 80;
 
         const right = () => {
             if (gridPosition.x + width >= canvas.width) {
@@ -114,7 +116,7 @@ export class KeyBoard {
             if (gridPosition.x + width >= canvas.width) {
                 playerMovement = up();
             }
-            if (gridPosition.y  <= 0) {
+            if (gridPosition.y <= 0) {
                 playerMovement = right();
 
             }
