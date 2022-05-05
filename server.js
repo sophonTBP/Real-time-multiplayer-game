@@ -63,11 +63,11 @@ const server = app.listen(portNum, () => {
 
 function main() {
 
-  
+
   const player = require("./public/Player.mjs")
   const Collectible = require("./public/Collectible.mjs")
   //Collectible.Collectible
-  
+
   const io = require('socket.io')(server, {
     cors: { origin: "*" }
   });
@@ -80,32 +80,45 @@ function main() {
     let id = Date.now()
     //{x, y, value, id}
     return new Collectible({ x: randomX, y: randomY, value: randomValue, id: id })
-  
-  
-  
-  }
 
+
+
+  }
+  let gameState = {}
   let mob = generateMob()
+  gameState.mob = mob
   io.on('connection', (socket) => {
     console.log(socket.id + 'a user connected');
-    
-    let gameState=mob
-    
+    socket.on("newPlayerConnects", (arg) => {
+      console.log(arg);
+      //gameState.players.push(playerCredentials)
+      //console.log(gameState.players)
+    });
+    socket.emit("tick", gameState)
 
     
-    
-    socket.on("requestTick",()=>{
-      socket.volatile.emit("tick",mob)
+
+
+
+    socket.on("requestTick", () => {
+
+
+      socket.emit("tick", gameState)
 
     })
-    
 
-    
+    socket.on("currPlayerState", (currPlayerState) => {
+
+
+     // console.log(currPlayerState.x)
+
+    })
+
 
     socket.on('collisionTrigger', () => {
       mob = generateMob()
-      
-      socket.emit("tick", mob)
+      gameState.mob = mob
+      socket.volatile.emit("tick", gameState)
     })
 
   });

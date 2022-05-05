@@ -13,7 +13,7 @@ let height = document.getElementById("game-window").clientHeight
 
 let keyBoard = new KeyBoard();
 
-let mob = {};
+
 
 function generateMob() {
 
@@ -94,76 +94,56 @@ function generateServerMob(mob) {
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-let item = {};
-
-
-
 let obj = keyBoard.movement;
-
 
 let testObj = new Proxy(obj, avatarHandler)
 //console.log(testObj)
 
 let avatarId = Date.now();
 let avatar = new Player({ x: 10, y: 10, width: 80, height: 80, score: 0, id: avatarId, speed: 0 });
+let item = {};
+item.value = 0// initialize value before tick to avoid console error
 
 
-setTimeout(() => {
-  socket.emit("requestTick", "world")
-}, 1000 / 20)
+/* setTimeout(() => {
+  
+  socket.emit("requestTick")
+}, 1000 / 25) */
 
+socket.emit("newPlayerConnects", avatar)
 
-//
-//
 function play() {
   requestAnimationFrame(play);
+
   keyBoard.listener()
   keyBoard.keyboardInput(canvas, avatar, avatar)
   avatar.movePlayer(avatar.dir, avatar.speed)
-  drawPlayer(ctx, avatar)
-  
-  
 
-  socket.on('tick', gameState => {
-    item = gameState;
+  drawPlayer(ctx, avatar)
+
+  socket.on('tick', async (gameState) => {
+    item = await gameState.mob;
     let avatarMovement = { speed: 0, dir: "" }
 
-    //console.log("gameState: ");
-    //console.log(gameState);
-  
-   
-    
+
   })
 
 
+  drawMob(item)
 
-drawMob(item)  
+  if (avatar.collision(item) == true) {
 
-if (avatar.collision(item) == true) {
-      //console.log(avatar.score)
-      let trigger = true;
-      socket.emit('collisionTrigger', trigger)
-      keyBoard.movement.dir = "none"
-      keyBoard.movement.speed = 0;
-    }
-
+    let trigger = true;
+    socket.emit('collisionTrigger', avatar.id)
+    keyBoard.movement.dir = "none"
+    keyBoard.movement.speed = 0;
+  }
 
 
+  socket.volatile.emit("currPlayerState", avatar)
 }
+
+
 play()
 
 
