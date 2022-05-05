@@ -1,8 +1,9 @@
 import Player from './Player.mjs';
 import Collectible from './Collectible.mjs';
 import KeyBoard from "./KeyboardInputs.mjs"
-//const socket = io();
 
+
+const socket = io();
 
 const canvas = document.getElementById('game-window');
 const ctx = canvas.getContext('2d');
@@ -10,9 +11,9 @@ const ctx = canvas.getContext('2d');
 let width = document.getElementById("game-window").clientWidth
 let height = document.getElementById("game-window").clientHeight
 
-let keyBoard = new KeyBoard()
+let keyBoard = new KeyBoard();
 
-
+let mob = {};
 
 function generateMob() {
 
@@ -21,7 +22,7 @@ function generateMob() {
   let randomY = Math.floor((Math.random() * 250) + 150)
   let id = Date.now()
   //{x, y, value, id}
-  return new Collectible({x:randomX, y:randomY, value:randomValue,id: id})
+  return new Collectible({ x: randomX, y: randomY, value: randomValue, id: id })
 
 
 
@@ -59,29 +60,115 @@ function drawPlayer(ctx, currPlayerPosition) {
   img.src = `./assets/avatars/a${value.toString()}.png`
 
 }
-let avatarId = Date.now()
-let avatar = new Player({x:10, y:10, width:80, height: 80,score: 0, id:avatarId})
-
-let mob = generateMob()
 
 
-function play() {
-  keyBoard.listener()
-  let avatarMovement = { speed: avatar.speed, dir: avatar.dir }
 
-  keyBoard.keyboardInput(canvas, avatarMovement, avatar)
-  avatar.movePlayer(avatarMovement.dir, avatarMovement.speed )
-  drawPlayer(ctx, avatar)
-  if (avatar.collision(mob) == true) {
-    console.log(avatar.score)
-    mob = generateMob()
+
+
+
+
+
+const avatarHandler = {
+  set(obj, prop, value) {
+
+    socket.emit('message', obj)
+    return Reflect.set(...arguments);
   }
-  drawMob(mob)
-  
-  requestAnimationFrame(play);
 }
 
 
+
+
+
+//console.log(avatarMovement.dir)
+
+
+
+// let avatarMovement = { speed: 0, dir: "none" }
+//const avatarMovementProxy = new Proxy(avatarMovement, avatarHandler)  
+
+
+function generateServerMob(mob) {
+  //{x, y, value, id}
+  return new Collectible({ x: mob.x, y: mob.y, value: mob.value, id: mob.id })
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+let item = {};
+
+
+
+let obj = keyBoard.movement;
+
+
+let testObj = new Proxy(obj, avatarHandler)
+//console.log(testObj)
+
+let avatarId = Date.now();
+let avatar = new Player({ x: 10, y: 10, width: 80, height: 80, score: 0, id: avatarId, speed: 0 });
+
+
+setTimeout(() => {
+  socket.emit("requestTick", "world")
+}, 1000 / 20)
+
+
+//
+//
+function play() {
+  requestAnimationFrame(play);
+  keyBoard.listener()
+  keyBoard.keyboardInput(canvas, avatar, avatar)
+  avatar.movePlayer(avatar.dir, avatar.speed)
+  drawPlayer(ctx, avatar)
+  
+  
+
+  socket.on('tick', gameState => {
+    item = gameState;
+    let avatarMovement = { speed: 0, dir: "" }
+
+    //console.log("gameState: ");
+    //console.log(gameState);
+  
+   
+    
+  })
+
+
+
+drawMob(item)  
+
+if (avatar.collision(item) == true) {
+      //console.log(avatar.score)
+      let trigger = true;
+      socket.emit('collisionTrigger', trigger)
+      keyBoard.movement.dir = "none"
+      keyBoard.movement.speed = 0;
+    }
+
+
+
+}
 play()
+
+
+
+
+
 
 

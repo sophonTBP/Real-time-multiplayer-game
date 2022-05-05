@@ -1,7 +1,7 @@
 class Player {
-  constructor({x, y,height,width, score, id, speed }) {
-   
-    Object.assign(this, {x, y,height,width, score, id, speed })  
+  constructor({ x, y, height, width, score, id, speed = 0 }) {
+
+    Object.assign(this, { x, y, height, width, score, id, speed })
   }
 
   movePlayer(dir, speed) {
@@ -42,9 +42,7 @@ class Player {
       this.y -= speed
     }
 
-
-
-    
+    //console.log(speed)
 
   }
 
@@ -52,16 +50,17 @@ class Player {
 
   collision(item) {
 
-    if (this.x+this.width/2 >= item.x &&
-      this.x+this.width/2 <= item.x + item.width &&
-      this.y+this.height/2  >= item.y &&
-      this.y+this.height/2  <= item.y + item.height||this.x==item.x&&this.y==item.y) {
-      this.score++
-     
+    if (this.x + this.width / 2 >= item.x &&
+      this.x + this.width / 2 <= item.x + item.width &&
+      this.y + this.height / 2 >= item.y &&
+      this.y + this.height / 2 <= item.y + item.height || this.x == item.x && this.y == item.y) {
+      this.score++;
+      this.speed = 0;
+
       return true
 
-      }
-     
+    }
+
 
   }
 
