@@ -76,57 +76,65 @@ function main() {
 
     let randomValue = Math.floor((Math.random() * 4))
     let randomX = Math.floor((Math.random() * 560))
-    let randomY = Math.floor((Math.random() * 250) + 150)
+    let randomY = Math.floor((Math.random() * 440) )
     let id = Date.now()
-    //{x, y, value, id}
+    //{x, y, value, id}lmkkm
     return new Collectible({ x: randomX, y: randomY, value: randomValue, id: id })
 
 
 
   }
+  let idTable = {}
+  let playerIdList = []
   let gameState = {}
   let mob = generateMob()
   gameState.mob = mob
+  
   io.on('connection', (socket) => {
-    console.log(socket.id + 'a user connected');
-    socket.on("newPlayerConnects", (arg) => {
-      console.log(arg);
-      //gameState.players.push(playerCredentials)
-      //console.log(gameState.players)
-    });
-    socket.emit("tick", gameState)
+  gameState.players = {}
 
-    
+    //socket.emit("tick", gameState)
+     socket.on("newPlayerConnects", (player) => {
+      console.log(player.id + ' a user connected');
+      idTable[socket.id] = player.id;
+      playerIdList.push(player.id)
+      //console.log(idTable)
+      gameState.players[player.id] = player;
 
+    }); 
 
+//yyujkljkl
+    socket.on('collisionTrigger', (avatarId) => {
 
-    socket.on("requestTick", () => {
-
-
-      socket.emit("tick", gameState)
-
-    })
-
-    socket.on("currPlayerState", (currPlayerState) => {
-
-
-     // console.log(currPlayerState.x)
-
-    })
-
-
-    socket.on('collisionTrigger', () => {
       mob = generateMob()
       gameState.mob = mob
-      socket.volatile.emit("tick", gameState)
+      gameState.players[avatarId].score+=1
+      socket.emit("tick", gameState)
     })
 
+
+    socket.on('currPlayerState', (player) => {
+
+      gameState.players[player.id] = player;
+
+    });
+
+    socket.on("disconnect", () => {
+
+      console.log(idTable[socket.id] + ' was deleted');
+      playerIdList.pop(player.id)
+      delete gameState.players[idTable[socket.id]];
+      socket.broadcast.emit("playerDisconected",player.id)
+    })
+    setInterval(() => {
+
+      socket.volatile.emit("tick", gameState);
+
+    }, 1000 / 60)
+
+    //console.log(gameState)
   });
-  io.on('message', (update) => {
-    console.log(" A player moved!")
-    console.log(`${socket.id.substr(0, 2)} moved ${update.dir} , speed:${update.speed}`);
-    //io.emit('message', `${socket.id.substr(0,2)} moved ${dir} , speed:${speed}` );   
-  });
+
 }
 
 main()

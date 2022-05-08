@@ -15,13 +15,14 @@ export class KeyBoard {
         } else if (e.key == "Left" || e.key == "ArrowLeft") {
             this.keyPad.leftPressed = true;
         } else if (e.key == "Up" || e.key == "ArrowUp") {
+            
             this.keyPad.upPressed = true;
         } else if (e.key == "Down" || e.key == "ArrowDown") {
             this.keyPad.downPressed = true;
-
+            
         }
 
-        e.preventDefault();
+        
     }
     keyUpHandler(e) {
         if (e.key == "Right" || e.key == "ArrowRight") {
@@ -29,12 +30,14 @@ export class KeyBoard {
         } else if (e.key == "Left" || e.key == "ArrowLeft") {
             this.keyPad.leftPressed = false;
         } else if (e.key == "Up" || e.key == "ArrowUp") {
+            
             this.keyPad.upPressed = false;
         } else if (e.key == "Down" || e.key == "ArrowDown") {
+            
             this.keyPad.downPressed = false;
         }
 
-        e.preventDefault();
+        //e.preventDefault();
 
 
     }

@@ -28,7 +28,7 @@ function generateMob() {
 
 }
 
-function drawMob(mob) {
+function drawStaticObject(mob) {
   let img = new Image();
   // Create new img element
 
@@ -44,21 +44,30 @@ function drawMob(mob) {
 
 
 
-function drawPlayer(ctx, currPlayerPosition) {
+function drawMobs(ctx, gameState) {
 
+  let images = []
   let value = 0;
-  let img = new Image();
-  img.addEventListener('load', function () {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // ctx.clearRect(0, 0, canvas.width, canvas.height)
-    ctx.imageSmoothingEnabled = true;
-    ctx.shadowColor = 'red';
-    ctx.shadowBlur = 15;
-    ctx.drawImage(img, currPlayerPosition.x, currPlayerPosition.y, 80, 80)
 
-  }, false);
-  img.src = `./assets/avatars/a${value.toString()}.png`
+  Object.entries(gameState).forEach((player, idx) => {
+    images[idx] = new Image();
+    images[idx].value = idx % 3;
+    images[idx].src = `./assets/avatars/a${value.toString()}.png`
+    images[idx].addEventListener('load', function () {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.imageSmoothingEnabled = true;
+      ctx.shadowColor = 'red';
+      ctx.shadowBlur = 15;
+      Object.entries(gameState).forEach((player, idx) => {
+        ctx.drawImage(images[idx], player[1].x, player[1].y, 80, 80)
 
+      }, false);
+    })
+  })
+  //img.src = `./assets/avatars/a${value.toString()}.png`
+
+  //console.log(gameState)
 }
 
 
@@ -95,41 +104,70 @@ function generateServerMob(mob) {
 }
 
 let obj = keyBoard.movement;
-
+let players = {}
 let testObj = new Proxy(obj, avatarHandler)
-//console.log(testObj)
-
 let avatarId = Date.now();
 let avatar = new Player({ x: 10, y: 10, width: 80, height: 80, score: 0, id: avatarId, speed: 0 });
+keyBoard.listener()
+/* socket.on("connected",()=>{
+let avatarId = Date.now();//
+avatar = new Player({ x: 10, y: 10, width: 80, height: 80, score: 0, id: avatarId, speed: 0 });  
+}) */
+
+
 let item = {};
 item.value = 0// initialize value before tick to avoid console error
 
 
-/* setTimeout(() => {
-  
-  socket.emit("requestTick")
-}, 1000 / 25) */
+
+
+
+socket.on("connetcion",()=>{
+players={}
+})
 
 socket.emit("newPlayerConnects", avatar)
 
-function play() {
-  requestAnimationFrame(play);
+socket.on('tick', (gameState) => {
 
-  keyBoard.listener()
-  keyBoard.keyboardInput(canvas, avatar, avatar)
-  avatar.movePlayer(avatar.dir, avatar.speed)
+  socket.volatile.emit("currPlayerState", avatar)
+  item = gameState.mob;
+  //testgfhfhfhlmùlmùlù
 
-  drawPlayer(ctx, avatar)
 
-  socket.on('tick', async (gameState) => {
-    item = await gameState.mob;
-    let avatarMovement = { speed: 0, dir: "" }
 
+
+  Object.entries(gameState.players).forEach(player => {
+    //players = {}
+    //if (player[1].x != players[player[0]].x || player[1].y != players[player[0]].y) {players.push(player[1]); console.log(players)}
+    players[player[0]] = player[1]
+    players[avatar.id] = avatar
 
   })
 
 
-  drawMob(item)
+})
+
+socket.on("playerDisconected", (playerId) => {
+  players = {}
+  delete players[playerId]
+})
+
+ 
+//console.clear()  
+socket.io.on("reconnect", () => {
+  players = {}//
+}) 
+
+//console.clear()
+console.log(players)
+//
+
+function play() {
+  
+  
+  keyBoard.keyboardInput(canvas, avatar, avatar)
+  avatar.movePlayer(avatar.dir, avatar.speed)
 
   if (avatar.collision(item) == true) {
 
@@ -137,14 +175,19 @@ function play() {
     socket.emit('collisionTrigger', avatar.id)
     keyBoard.movement.dir = "none"
     keyBoard.movement.speed = 0;
+    console.log(avatar.score)
   }
 
 
-  socket.volatile.emit("currPlayerState", avatar)
+  socket.emit("currPlayerState", avatar)
+  drawMobs(ctx, players)
+  drawStaticObject(item)
+requestAnimationFrame(play);
 }
 
-
 play()
+
+
 
 
 
