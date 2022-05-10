@@ -5,9 +5,9 @@ class Player {
   }
 
   movePlayer(dir, speed) {
-    
+
     //let this = { x: 0, y: 0 };
-    
+
 
 
     if (dir == "rightup") {
@@ -64,8 +64,21 @@ class Player {
 
   }
 
-  calculateRank(arr) {
+  calculateRank(playerList) {
+    console.log(playerList)
+    let sortedRank = []
+    for (let player of playerList) {
+      sortedRank.push([player.id, player.score]);
+    }
 
+    sortedRank.sort(function (a, b) {
+      return b[1] - a[1];
+    });
+    console.log(sortedRank)
+
+    const getRanked = () => { return sortedRank.findIndex(row => row.indexOf(this.id) !== -1) + 1; }
+    let rank = `Rank: ${getRanked()}/${playerList.length}`
+    return rank
 
   }
 }

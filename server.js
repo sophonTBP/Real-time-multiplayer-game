@@ -12,6 +12,7 @@ const cors = require('cors');
 
 const fccTestingRoutes = require('./routes/fcctesting.js');
 const runner = require('./test-runner.js');
+const { default: Player } = require('./public/Player.mjs');
 
 const app = express();
 
@@ -62,61 +63,53 @@ const server = app.listen(portNum, () => {
 
 
 function main() {
-
-
   const player = require("./public/Player.mjs")
   const Collectible = require("./public/Collectible.mjs")
-  //Collectible.Collectible
-
   const io = require('socket.io')(server, {
     cors: { origin: "*" }
   });
-
   function generateMob() {
 
     let randomValue = Math.floor((Math.random() * 4))
     let randomX = Math.floor((Math.random() * 560))
-    let randomY = Math.floor((Math.random() * 440) )
+    let randomY = Math.floor((Math.random() * 440))
     let id = Date.now()
-    //{x, y, value, id}lmkkm
+    
     return new Collectible({ x: randomX, y: randomY, value: randomValue, id: id })
 
-
-
   }
+
   let idTable = {}
   let playerIdList = []
   let gameState = {}
   let mob = generateMob()
-  gameState.mob = mob
+  gameState.mob = mob;
+  gameState.players = {};
+  gameState.scoreList={}
+  gameState.rank = [];
+ 
   
   io.on('connection', (socket) => {
-  gameState.players = {}
+    let playerId = Date.now()
+    let player = new Player({ x: 10, y: 10, width: 80, height: 80, score: 0, id: playerId, speed: 0 })
+    console.log(player.id + ' a user connected');
+    idTable[socket.id] = player.id;
+    gameState.players[playerId] = player
 
-    //socket.emit("tick", gameState)
-     socket.on("newPlayerConnects", (player) => {
-      console.log(player.id + ' a user connected');
-      idTable[socket.id] = player.id;
-      playerIdList.push(player.id)
-      //console.log(idTable)
-      gameState.players[player.id] = player;
-
-    }); 
-
-//yyujkljkl
-    socket.on('collisionTrigger', (avatarId) => {
+    
+    io.to(socket.id).emit("handShake", player)
+    socket.on('collisionTrigger', (playerId) => {
 
       mob = generateMob()
       gameState.mob = mob
-      gameState.players[avatarId].score+=1
+      gameState.players[playerId].score += 1
       socket.emit("tick", gameState)
     })
-
+    ///L/
 
     socket.on('currPlayerState', (player) => {
 
       gameState.players[player.id] = player;
-
     });
 
     socket.on("disconnect", () => {
@@ -124,18 +117,17 @@ function main() {
       console.log(idTable[socket.id] + ' was deleted');
       playerIdList.pop(player.id)
       delete gameState.players[idTable[socket.id]];
-      socket.broadcast.emit("playerDisconected",player.id)
+      
+      socket.broadcast.emit("playerDisconected", player.id)
     })
     setInterval(() => {
-
       socket.volatile.emit("tick", gameState);
+    }, 1000 / 25)
 
-    }, 1000 / 60)
-
-    //console.log(gameState)
+    
   });
 
 }
 
 main()
-module.exports = app; // For testing
+module.exports = app; 

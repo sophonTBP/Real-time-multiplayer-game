@@ -44,7 +44,7 @@ export class KeyBoard {
 
 
 
-    keyDownHandler2(e) {
+    /* keyDownHandler2(e) {
         if (e.key == "Right" || e.key == "ArrowRight") {
             this.movement.dir = "right";
             this.movement.speed = 7;
@@ -85,12 +85,12 @@ export class KeyBoard {
         e.preventDefault();
 
 
-    }
+    } */
     listener() {
         document.addEventListener("keydown", this.keyDownHandler.bind(this), false);
         document.addEventListener("keyup", this.keyUpHandler.bind(this), false);
-        window.addEventListener("keydown", this.keyDownHandler2.bind(this), false);
-        window.addEventListener("keyup", this.keyUpHandler2.bind(this), false);
+        /* document.addEventListener("keydown", this.keyDownHandler2.bind(this), false);
+        document.addEventListener("keyup", this.keyUpHandler2.bind(this), false); */
     }
 
 
@@ -98,7 +98,7 @@ export class KeyBoard {
 
     // manages keyBoard inputs and collisions with the game borders
 
-    getPlayerMovement(canvas, playerMovement, gridPosition) {
+    /* getPlayerMovement(canvas, playerMovement, gridPosition) {
         this.listener()
         let width = 80;
         let height = 80;
@@ -106,44 +106,44 @@ export class KeyBoard {
         const right = () => {
             if (gridPosition.x + width >= canvas.width) {
                 this.movement.speed = 0;
-
+               // return this.movement
             }
             this.movement.speed = 7;
             this.movement.dir = "right";
-
+            //return this.movement
         };
 
         const left = () => {
             if (gridPosition.x <= 0) {
                 this.movement.speed = 0;
-
+                //return this.movement
             }
 
             this.movement.speed = 7;
             this.movement.dir = "left";
-
+           // return this.movement
         };
 
         const up = () => {
 
             if (gridPosition.y <= 0) {
                 this.movement.speed = 0;
-
+               // return this.movement
             }
             this.movement.speed = 7;
             this.movement.dir = "up";
-
+           // return this.movement
         };
 
         const down = () => {
 
             if (gridPosition.y + height >= canvas.height) {
                 this.movement.speed = 0
-
+                //return this.movement
             }
             this.movement.speed = 7;
             this.movement.dir = "down";
-
+           // return this.movement
         };
 
         if (this.keyPad.rightPressed) {
@@ -169,11 +169,11 @@ export class KeyBoard {
             this.movement.dir = "rightup"
             if (gridPosition.x + width >= canvas.width) {
                 up();
-                return this.movement
+                //return this.movement
             }
             if (gridPosition.y <= 0) {
                 right();
-                return this.movement
+                //return this.movement
             }
         }
         if (this.keyPad.rightPressed && this.keyPad.downPressed) {
@@ -181,12 +181,12 @@ export class KeyBoard {
             this.movement.dir = "rightdown"
             if (gridPosition.x + width >= canvas.width) {
                 down();
-                return this.movement
+                //return this.movement
 
             }
             if (gridPosition.y + height >= canvas.height) {
                 right();
-                return this.movement
+                //return this.movement
             }
         }
 
@@ -195,11 +195,11 @@ export class KeyBoard {
             this.movement.dir = "leftup"
             if (gridPosition.x <= 0) {
                 up();
-                return this.movement
+               // return this.movement
             }
             if (gridPosition.y <= 0) {
                 left();
-                return this.movement
+               // return this.movement
             }
         }
         if (this.keyPad.leftPressed && this.keyPad.downPressed) {
@@ -207,19 +207,21 @@ export class KeyBoard {
             this.movement.dir = "leftdown"
             if (gridPosition.x <= 0) {
                 down();
-                return this.movement
+               // return this.movement
             }
             if (gridPosition.y + height >= canvas.height) {
                 left();
-                return this.movement
+                //return this.movement
             }
         } else {
             this.movement.dir = "none"
             this.movement.speed = 0
-            return this.movement
+            //return this.movement
         }
-        return this.movement
-    }
+        //return this.movement
+    } */
+
+    
     keyboardInput(canvas, playerMovement, gridPosition) {
 
         let width = 80;

@@ -8,16 +8,26 @@ code {
 
 canvas {
   margin: auto;
+  
 }
 
 .container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
 }
 #game-window{
   background: #101020;
+  
+  flex:1;
 }
-
+.sidebar{
+  background: #101020;
+  color: white;
+  
+  margin-right: 15%;
+  flex:2;
+  
+}
 @media (min-width: 800px) {
   .container {
     flex-direction: row;
