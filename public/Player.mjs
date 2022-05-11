@@ -65,7 +65,7 @@ class Player {
   }
 
   calculateRank(playerList) {
-    console.log(playerList)
+    //console.log(playerList)
     let sortedRank = []
     for (let player of playerList) {
       sortedRank.push([player.id, player.score]);
@@ -74,7 +74,7 @@ class Player {
     sortedRank.sort(function (a, b) {
       return b[1] - a[1];
     });
-    console.log(sortedRank)
+    //console.log(sortedRank)
 
     const getRanked = () => { return sortedRank.findIndex(row => row.indexOf(this.id) !== -1) + 1; }
     let rank = `Rank: ${getRanked()}/${playerList.length}`

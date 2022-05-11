@@ -3,6 +3,35 @@ import Collectible from './Collectible.mjs';
 import KeyBoard from "./KeyboardInputs.mjs"
 
 
+
+function preload() {
+
+  let arr = []
+  for (var i = 0; i < arguments.length; i++) {
+    let obj = new Image();
+    obj.src = arguments[i];
+    arr[i] = obj;
+
+  }
+  return arr
+}
+
+
+let collectibles = preload(
+  "./assets/collectibles/c0.png",
+  "./assets/collectibles/c1.png",
+  "./assets/collectibles/c2.png",
+  "./assets/collectibles/c3.png"
+)
+let avatars = preload(
+  "./assets/avatars/a0.png",
+  "./assets/avatars/a1.png",
+  "./assets/avatars/a2.png"
+
+)
+
+
+
 const socket = io();
 
 const canvas = document.getElementById('game-window');
@@ -13,106 +42,91 @@ let height = document.getElementById("game-window").clientHeight
 
 let keyBoard = new KeyBoard();
 
-
-
-function drawStaticObject(mob) {
-  let img = new Image();
-  // Create new img element
-
-  img.addEventListener('load', function () {
-    ctx.imageSmoothingEnabled = true;
-    ctx.shadowColor = 'white';
-    ctx.shadowBlur = 15;
-    ctx.drawImage(img, mob.x, mob.y, mob.width, mob.height)
-
-  }, false);
-  img.src = `./assets/collectibles/c${mob.value.toString()}.png` // Set source path 
-}
-
-
-
-function drawMobs(ctx, gameState) {
-  let colors = ["blue", "red", "yellow", "green"]
-  let images = []
-  let value = 0;
-
-  Object.entries(gameState).forEach((player, idx) => {
-    images[idx] = new Image();
-    images[idx].value = idx % 3;
-    player.color=colors[images[idx].value]
-    images[idx].src = `./assets/avatars/a${images[idx].value.toString()}.png`
-    images[idx].addEventListener('load', function () {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.imageSmoothingEnabled = true;
-
-      Object.entries(gameState).forEach((player, idx) => {
-
-        ctx.shadowColor = colors[images[idx].value];
-        ctx.shadowBlur = 15;
-        ctx.drawImage(images[idx], player[1].x, player[1].y, 80, 80)
-
-      });
-    }, false)
-
-  })
-  document.getElementById("score_display").innerHTML = avatar.score;
- 
-}
-
-
-
-
-
-
-
-
-const avatarHandler = {
-  set(obj, prop, value) {
-
-    socket.emit('message', obj)
-    return Reflect.set(...arguments);
-  }
-}
+let refreshPlayercount = false;
 
 
 
 
 let obj = keyBoard.movement;
-let players = {};
+
 let playerTotalNum = 0;
-let testObj = new Proxy(obj, avatarHandler);
+
 
 let avatar = {};
 keyBoard.listener();
-
 let item = {};
-item.value = 0// initialize value before tick to avoid loging errorto console
+item.value = 0;// initialize value before tick to avoid loging error to the console
+let itemImg = new Image();
+itemImg.onload = function () {
+
+  //ctx.imageSmoothingEnabled = true;
+
+  ctx.shadowColor = 'white';
+  ctx.shadowBlur = 35;
+
+  //requestAnimationFrame(play)
+};
+// }
+let players = {};
+let images = []
+
+itemImg.src = collectibles[item.value.toString()].src
+//ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+//
+
+let colors = ["blue", "red", "yellow", "green"]
+
+let value = 0;
+
+
+
+
+
+
+
+
+let playerList = [];
+
 let rank;
 
 socket.on("handShake", (player) => {
   avatar = new Player({ x: 10, y: 10, width: 80, height: 80, score: 0, id: player.id, speed: 0 })
-  players = {}
-  
+  //players = {}
+  //playerList.push(avatar)
+
 })
 
-let playerRank
-let playerList = [];
+
+let playerRank;
+
+
 socket.on('tick', (gameState) => {
+  refreshPlayercount = false;
 
   socket.volatile.emit("currPlayerState", avatar);
-  item = gameState.mob;
-  rank = gameState.rank;
+  players = {}
+
   playerList = [];
+  images = []
+  /* item.value = gameState.item.value;
+  item.id = gameState.item.id;
+  item.width = gameState.item.width;
+  item.height = gameState.item.height; */
 
-  
-  Object.entries(gameState.players).forEach(player => {
+  rank = gameState.rank;
+  //item.x = gameState.item.x;
+  //item.y = gameState.item.y;
+  item = { ...gameState.item }
 
-    players[player[0]] = player[1];
-    playerList.push(player[1]);
-   
+  Object.values(gameState.players).forEach(player => {
+
+    players[player.id] = player;
+    playerList = Object.values(gameState.players);
+    //console.log(playerList)
 
   })
+
 
 
   playerTotalNum = playerList.length
@@ -122,6 +136,10 @@ socket.on('tick', (gameState) => {
   if (avatar.score != 0) {
     playerRank = avatar.calculateRank(playerList);
   }
+
+
+
+  document.getElementById("score_display").innerHTML = avatar.score;
   document.getElementById("rank_display").innerHTML = playerRank;
 })
 
@@ -130,8 +148,10 @@ socket.on('tick', (gameState) => {
 
 
 socket.on("playerDisconected", (playerId) => {
+  refreshPlayercount = true
   players = {};
   delete players[playerId];
+  //playerList = []
 })
 
 
@@ -140,41 +160,93 @@ socket.io.on("connection_err", () => {
   console.log("connection_err")
   players = {};
   avatar = {};
+  playerList = []
+  //images = []
 })
 
 
 
+let update = true;
 
 
-setTimeout(() => {
-  console.log(avatar.id)
-  
-  function play() {
 
-    requestAnimationFrame(play);
-  
-    keyBoard.keyboardInput(canvas, avatar, avatar)
+//
 
 
-    avatar.movePlayer(avatar.dir, avatar.speed)
-   
-    if (avatar.collision(item) == true) {
 
-      let trigger = true;
-      socket.emit('collisionTrigger', avatar.id)
-      keyBoard.movement.dir = "none"
-      keyBoard.movement.speed = 0;
+const createPlayerImgs = (canvas, ctx, playerList) => {
+  // ctx.clearRect(0, 0, canvas.width, canvas.height)
+  if (playerList) {
+    let len = playerList.length;
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    for (let idx = 0; idx < len; idx++) {
+
       
+      avatars[idx].value = idx;
+      avatars[idx].dx = playerList[idx].x
+      avatars[idx].dy = playerList[idx].y
+      
+      if (avatars[idx].complete) { ctx.drawImage(avatars[idx], avatars[idx].dx, avatars[idx].dy, 80, 80); }
+      /*  */
+
+
+
+
+
     }
 
-    drawMobs(ctx, players)
-    drawStaticObject(item)
-    
+    // drawPlayerImgs(ctx, images);
   }
 
-  play()
- 
-}, 1000)
+}
+
+
+
+
+
+
+setTimeout(()=>{
+function play() {
+
+  requestAnimationFrame(play);
+
+
+  keyBoard.keyboardInput(canvas, avatar, avatar)
+
+  avatar.movePlayer(avatar.dir, avatar.speed)
+
+  if (avatar.collision(item) == true) {
+
+    let trigger = true;
+    
+    socket.emit('collisionTrigger', avatar.id)
+    keyBoard.movement.dir = "none"
+    keyBoard.movement.speed = 0;
+
+
+  }
+
+
+  //ctx.drawImage(img, img.dx, img.dy, item.width, item.height)
+
+
+
+
+  /* for(let idx=0;idx<images.length;i++){
+    ctx.drawImage(images[idx], images[idx].dx, images[idx].dy, 80, 80)
+  } */
+
+  createPlayerImgs(canvas, ctx, playerList, images)
+  ctx.drawImage(itemImg, item.x, item.y, item.width, item.height)
+
+}
+
+play()
+},200)
+
+
+
+
 
 
 
